@@ -1,0 +1,4 @@
+with open('test02.txt') as f:
+    lines = f.readlines()
+
+print(lines)
