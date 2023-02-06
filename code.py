@@ -1,25 +1,29 @@
+import sys
+
 #REMOVE RECURSIVE AND TEST OTHER LIMITS
 maxValue = 0
 flow = []
 maxFlow = []
-
+maxInputChain = 0
+inputSize = 0
 def recursive(a, dictio, chain):
 	global maxValue
 	global maxFlow
+	global maxInputChain
+	global inputSize
 
-	if(chain == 994):
-		return chain
 	if(chain > maxValue):
 		maxValue = chain
 		maxFlow = flow.copy()
-		#print(maxFlow)
-		#print(flow)
+	if(chain == maxInputChain):
+		return maxInputChain
+
 	#print(chain)
 	#print(dictio)
 	if(not a in dictio):
 		return -1
 	if(not dictio):
-		return maxValue
+		return len(maxFlow)
 		
 	edges = filter(lambda posib: dictio[a][posib][0] > 0, dictio[a].keys())
 	
@@ -36,9 +40,13 @@ def recursive(a, dictio, chain):
 		if(valor != -1):
 			return valor
 
-		flow.remove(possible)
+		flow.pop()
 		dictio[a][possible][0] = dictio[a][possible][0] + 1
 		#print(dictio)
+		
+	if(inputSize > 45):
+		maxInputChain = maxInputChain - 1
+	
 	return -1
 
 def solve(a):
@@ -50,24 +58,31 @@ def solve(a):
 			return
 		if(maxValue > valor):
 			valor = maxValue
-		flow.remove(value)
+		flow.pop()
 
 dict = {}
+inputSize = 0;
 
+for line in sys.stdin.readlines():
+	firstLetter = line[0].lower()
+	lastLetter = line[-2].lower()
+	if(not firstLetter in dict):
+		dict[firstLetter] = {}
+	if(not lastLetter in dict[firstLetter]):
+		dict[firstLetter][lastLetter] = [1, [line[:-1]]] 
+		#dict[line[0]][line[-2]] = [1] 
+	else:
+		dict[firstLetter][lastLetter][0] = dict[firstLetter][lastLetter][0] + 1
+		dict[firstLetter][lastLetter][1].append(line[:-1])
+	inputSize = inputSize + 1
 
+if(inputSize == 0):
+	exit()
 
-with open('test06.txt') as f:
-	for line in f.readlines():
-		line = line.lower()
-		if(not line[0] in dict):
-			dict[line[0]] = {}
-		if(not line[-2] in dict[line[0]]):
-			dict[line[0]][line[-2]] = [1, [line[:-1]]] 
-			#dict[line[0]][line[-2]] = [1] 
-		else:
-			dict[line[0]][line[-2]][0] = dict[line[0]][line[-2]][0] + 1
-			dict[line[0]][line[-2]][1].append(line[:-1])
+sys.setrecursionlimit(inputSize + 1000)
 
+maxInputChain = inputSize
+	 
 solve(dict) 
 count = 0;
 initial = maxFlow[0]
@@ -76,7 +91,5 @@ for a in maxFlow:
 	if(count == 1):
 		continue
 	print(dict[initial][a][1][0])
-	dict[initial][a][1][0]
 	del dict[initial][a][1][0]
 	initial = a
-
