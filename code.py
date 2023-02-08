@@ -6,16 +6,19 @@ flow = []
 maxFlow = []
 maxInputChain = 0
 inputSize = 0
+operations = 0
+
 def recursive(a, dictio, chain):
 	global maxValue
 	global maxFlow
 	global maxInputChain
 	global inputSize
+	global operations
 
 	if(chain > maxValue):
 		maxValue = chain
 		maxFlow = flow.copy()
-	if(chain == maxInputChain):
+	if(chain >= maxInputChain):
 		return maxInputChain
 
 	#print(chain)
@@ -43,10 +46,14 @@ def recursive(a, dictio, chain):
 		flow.pop()
 		dictio[a][possible][0] = dictio[a][possible][0] + 1
 		#print(dictio)
-		
-	if(inputSize > 45):
-		maxInputChain = maxInputChain - 1
+
 	
+	if(inputSize > 50):
+		operations = operations + 1 
+	if(operations == 10000):
+		operations = 0
+		maxInputChain = maxInputChain - 1
+
 	return -1
 
 def solve(a):
@@ -82,7 +89,7 @@ if(inputSize == 0):
 sys.setrecursionlimit(inputSize + 1000)
 
 maxInputChain = inputSize
-	 
+	
 solve(dict) 
 count = 0;
 initial = maxFlow[0]
