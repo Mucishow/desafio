@@ -48,7 +48,7 @@ def recursive(a, dictio, chain):
 		#print(dictio)
 
 	
-	if(inputSize > 50):
+	if(inputSize > 45):
 		operations = operations + 1 
 	if(operations == 10000):
 		operations = 0
@@ -58,6 +58,7 @@ def recursive(a, dictio, chain):
 
 def solve(a):
 	valor = 0
+	total = 0
 	for value in a.keys():
 		flow.append(value)
 		aux = recursive(value, a , 0)
@@ -89,7 +90,7 @@ if(inputSize == 0):
 sys.setrecursionlimit(inputSize + 1000)
 
 maxInputChain = inputSize
-	
+
 solve(dict) 
 count = 0;
 initial = maxFlow[0]
