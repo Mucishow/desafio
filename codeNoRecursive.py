@@ -32,7 +32,7 @@ def recursive(a, dictio, chain):
 			dictio[a][possible][0] = dictio[a][possible][0] - 1
 			flow.append(possible)
 			if(possible in dictio):
-				aux_edges = list(filter(lambda posib: dictio[possible][posib][0] > 0, dictio[possible].keys()))
+				aux_edges = sorted(list(filter(lambda posib: dictio[possible][posib][0] > 0, dictio[possible].keys())))
 			else:
 				aux_edges = []
 
@@ -75,7 +75,7 @@ def recursive(a, dictio, chain):
 
 def solve(a):
 	valor = 0
-	for value in a.keys():
+	for value in sorted(list(a.keys())):
 		flow.append(value)
 		#print(a)
 		aux = recursive(value, a , 0)
