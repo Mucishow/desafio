@@ -64,7 +64,7 @@ def recursive(a, dictio, chain):
 		if(not flag):
 			if(inputSize > 45):
 				operations = operations + 1 
-			if(operations == 100):
+			if(operations == 10):
 				operations = 0
 				maxInputChain = maxInputChain - 1
 			if(len(memoryStack) > 0):
