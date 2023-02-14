@@ -15,36 +15,35 @@ def recursive(a, dictio, chain, startTime):
 	global inputSize
 	global operations
 	memoryStack = []
-
+	isLeaf = {}
 	edges = list(filter(lambda posib: dictio[a][posib][0] > 0, dictio[a].keys()))
 	i = 0
 	memoryStack.append([edges, 0, a, 0])
 	while(len(memoryStack) > 0):
 		edges, i, a, chain = memoryStack.pop()
-		if(time.time() - startTime > 29.1):
+		if(time.time() - startTime > 29.5):
 			return len(maxFlow)
 		flag = False
 		while i < len(edges):
 			possible = edges[i]
 			i = i + 1
-			if(dictio[a][possible][0] == 0):
-				continue
 
 			dictio[a][possible][0] = dictio[a][possible][0] - 1
 			flow.append(possible)
+			#print(flow)
 			if(possible in dictio):
-				aux_edges = sorted(list(filter(lambda posib: dictio[possible][posib][0] > 0, dictio[possible].keys())))
+				aux_edges = list(filter(lambda posib: dictio[possible][posib][0] > 0 and not possible+posib in isLeaf, dictio[possible].keys()))
 			else:
 				aux_edges = []
 
-			if(not possible in dictio or len(aux_edges) == 0):
+			if(len(aux_edges) == 0):
 				if(chain + 1 > maxValue):
 					maxValue = chain + 1
 					maxFlow = flow.copy()
-				if(not dictio):
-					return len(maxFlow)
 
 				dictio[a][possible][0] = dictio[a][possible][0] + 1
+				#print(flow[0], flow[-2], flow[-1], chain + 1, flow)
+				isLeaf[flow[-2] + flow[-1]] = 1
 				flow.pop()
 
 			else:
@@ -54,12 +53,12 @@ def recursive(a, dictio, chain, startTime):
 				if(chain + 1> maxValue):
 					maxValue = chain + 1
 					maxFlow = flow.copy()
-				if(not dictio):
-					return len(maxFlow)
 
 				break
 		if(not flag):
 			if(len(memoryStack) > 0):
+				#print(flow[0], flow[-1])
+				#isLeaf = {}
 				possible = flow[-1]
 				dictio[flow[-2]][flow[-1]][0] = dictio[flow[-2]][flow[-1]][0] + 1
 				possible = flow.pop()
@@ -67,9 +66,8 @@ def recursive(a, dictio, chain, startTime):
 
 def solve(a, startTime):
 	valor = 0
-	for value in sorted(list(a.keys())):
+	for value in list(a.keys()):
 		flow.append(value)
-		#print(a)
 		aux = recursive(value, a , 0, startTime)
 		if(aux != -1):
 			return
