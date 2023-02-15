@@ -149,11 +149,10 @@ int main(void)
      
     beginTime = time(NULL);
     
-    fp = fopen("teste08.txt", "r");
+    //fp = fopen("teste08.txt", "r");
     
-    if (fp == NULL)
-        return 0;
-
+    //if (fp == NULL)
+    //    return 0;
     int i, j;
     int** matrix;
     int maxInput = 0;
@@ -172,10 +171,9 @@ int main(void)
     int*** wordMatrixIndex;
     char ** wordList;
     wordMatrixIndex = (int***) calloc(26,sizeof(int**));
-    wordList = (char**) calloc(75000, sizeof(char*));
+    wordList = (char**) calloc(750000, sizeof(char*));
     for (i = 0; i < 26; i++){
         wordMatrixIndex[i] = (int**)calloc(26, sizeof(int*));
-        wordList[i] = (char*) calloc(40, sizeof(char));
         for(j = 0; j < 26; j++){
             wordMatrixIndex[i][j] = (int*)calloc(1000, sizeof(int));
         }
@@ -183,6 +181,34 @@ int main(void)
     }
     
     int count = 0;
+    while ((read = getline(&wordList[count], &len, stdin)) != -1) {
+        int firstLetter;
+        int lastLetter;
+        if(wordList[count][0] < 97){
+        	firstLetter = wordList[count][0]-65;
+        } else {
+            firstLetter = wordList[count][0]-97;
+        }
+        lastLetter = wordList[count][read-2]-97;
+        matrix[firstLetter][lastLetter]++;
+        maxInput++;
+
+
+        int aux = printIndexMatrix[firstLetter][lastLetter];
+        wordMatrixIndex[firstLetter][lastLetter][aux] = count;
+        printIndexMatrix[firstLetter][lastLetter]++;
+        
+        wordList[count][strcspn(wordList[count], "\n")] = 0;
+        count++;
+        
+    }
+    for(i = 0; i < count; i++){
+        printf("%s\n", wordList[i]);
+    }
+    return 0;
+
+
+
     while ((read = getline(&line, &len, fp)) != -1) {
         int firstLetter;
         int lastLetter;
