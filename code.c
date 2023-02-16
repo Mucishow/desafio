@@ -2,7 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-
+#include <sys/resource.h>
+#include <errno.h>
+#include <unistd.h>
 #undef _GLIBCXX_DEBUG
 #pragma GCC optimize("Ofast,inline")
 #pragma GCC target("bmi,bmi2,lzcnt,popcnt")
@@ -29,9 +31,7 @@ int recursive(int beginLetter, int** matrix, time_t beginTime, int maxInput, int
         letter = memoryStackLetter[memoryStackCount];
         i = memoryStackIndex[memoryStackCount];
         time_t endTime = time(NULL);
-        //printf("-----------%c-----------\n",97+letter);
         if(endTime - beginTime > 28){
-            printf("A %d\n", *maxFlowSize);
             return *maxFlowSize;
         }
         
@@ -43,7 +43,6 @@ int recursive(int beginLetter, int** matrix, time_t beginTime, int maxInput, int
                 continue;
             }
             
-            //printf("Next Letter %c Next %c : %d \n", 97+letter, 97+nextLetter, count);
             matrix[letter][nextLetter]--;
             flow[count++] = nextLetter;
             int j;
@@ -56,16 +55,12 @@ int recursive(int beginLetter, int** matrix, time_t beginTime, int maxInput, int
             }
             
             if(!validLetter){
-                //printf("NOT VALID\n");
                 if(count > (*maxFlowSize)){
-                    //printf("COPY\n");
                     (*maxFlowSize) = count;
                     int k;
                     for(k = 0; k < count;k++){
                         maxFlow[k] = flow[k];
-                        //printf("%c ", 97+maxFlow[k]);
                     }
-                    //printf("\n");
                     maxFlow[(*maxFlowSize)] = -1;
                     
                 }
@@ -73,7 +68,6 @@ int recursive(int beginLetter, int** matrix, time_t beginTime, int maxInput, int
                 flow[count] = -1;
                 count--;
             } else {
-                //printf("VALID\n");
                 memoryStackLetter[memoryStackCount] = letter;
                 memoryStackIndex[memoryStackCount] = i;
                 memoryStackCount++;
@@ -83,14 +77,11 @@ int recursive(int beginLetter, int** matrix, time_t beginTime, int maxInput, int
                 
                 foundSomething = 1;
                 if(count > (*maxFlowSize)){
-                    //printf("COPY\n");
                     (*maxFlowSize) = count;
                     int k;
                     for(k = 0; k < count;k++){
                         maxFlow[k] = flow[k];
-                        //printf("%c ", 97+maxFlow[k]);
                     }
-                    //printf("\n");
                     maxFlow[(*maxFlowSize)] = -1;
                 }
                 break;
@@ -100,8 +91,6 @@ int recursive(int beginLetter, int** matrix, time_t beginTime, int maxInput, int
         if(!foundSomething){
             if(memoryStackCount > 0) { 
                 nextLetter = flow[count-1];
-                //printf("REMOVING %c\n",97+flow[count-1]);
-                //printf("UPDATE %c %c\n", 97+flow[count-2],97+flow[count-1]);
                 matrix[flow[count-2]][flow[count-1]]++;
                 flow[count] = -1;
                 count--;
@@ -110,7 +99,6 @@ int recursive(int beginLetter, int** matrix, time_t beginTime, int maxInput, int
         
     }
     return -1;
-    //printf("RECURSIVE %c\n", (97+beginLetter));
 }
 
 int solve(int** matrix, time_t beginTime, int maxInput, int* flow) {
@@ -122,7 +110,6 @@ int solve(int** matrix, time_t beginTime, int maxInput, int* flow) {
         for(j = 0; j < 26; j++){
             if(matrix[i][j] > 0){
                 validLetter = 1;
-                //printf("B %c\n", 97+i);
                 int aux;
                 aux = recursive(i, matrix, beginTime, maxInput, flow, &maxFlowSize);
                 if(aux != -1)
@@ -131,11 +118,7 @@ int solve(int** matrix, time_t beginTime, int maxInput, int* flow) {
             }
         }
     }
-    printf("%d\n", maxFlowSize);
-    for(i = 0; i < maxFlowSize; i++){
-        printf("%c ", 97+flow[i]);
-    }
-    printf("\n");
+    return maxFlowSize;
 }
 
 int main(void)
@@ -146,16 +129,12 @@ int main(void)
     ssize_t read;
 
     time_t beginTime;
-     
     beginTime = time(NULL);
     
-    //fp = fopen("teste08.txt", "r");
-    
-    //if (fp == NULL)
-    //    return 0;
     int i, j;
     int** matrix;
     int maxInput = 0;
+    
     //Initialize Graph
     matrix = (int**) calloc(26,sizeof(int*));
     for (i = 0; i < 26; i++)
@@ -168,28 +147,34 @@ int main(void)
         printIndexMatrix[i] = (int*)calloc(26, sizeof(int));
     
     //Initialize Graph to print output
+    //Matrix of list of word position in list
     int*** wordMatrixIndex;
     char ** wordList;
     wordMatrixIndex = (int***) calloc(26,sizeof(int**));
-    wordList = (char**) calloc(750000, sizeof(char*));
+    wordList = (char**) calloc(200001, sizeof(char*));
     for (i = 0; i < 26; i++){
         wordMatrixIndex[i] = (int**)calloc(26, sizeof(int*));
         for(j = 0; j < 26; j++){
-            wordMatrixIndex[i][j] = (int*)calloc(1000, sizeof(int));
+            wordMatrixIndex[i][j] = (int*)calloc(10000, sizeof(int));
         }
 
     }
     
+    //Read input and print word position for each letter
     int count = 0;
     while ((read = getline(&wordList[count], &len, stdin)) != -1) {
         int firstLetter;
         int lastLetter;
         if(wordList[count][0] < 97){
-        	firstLetter = wordList[count][0]-65;
+            firstLetter = wordList[count][0]-65;
         } else {
             firstLetter = wordList[count][0]-97;
         }
-        lastLetter = wordList[count][read-2]-97;
+        if(wordList[count][read-2] < 97){
+            lastLetter = wordList[count][read-2]-65;
+        } else {
+            lastLetter = wordList[count][read-2]-97;
+        }
         matrix[firstLetter][lastLetter]++;
         maxInput++;
 
@@ -202,37 +187,23 @@ int main(void)
         count++;
         
     }
-    for(i = 0; i < count; i++){
-        printf("%s\n", wordList[i]);
-    }
-    return 0;
-
-
-
-    while ((read = getline(&line, &len, fp)) != -1) {
-        int firstLetter;
-        int lastLetter;
-        if(line[0] < 97){
-        	firstLetter = line[0]-65;
-        } else {
-            firstLetter = line[0]-97;
+    
+    //Reset the index of matrix
+    for (i = 0; i < 26; i++){
+        for(j = 0; j < 26; j++){
+            printIndexMatrix[i][j] = 0;
         }
-        lastLetter = line[read-2]-97;
-        matrix[firstLetter][lastLetter]++;
-        maxInput++;
-        
-        wordList[count++] = line;
     }
-
-        
-    for(i = 0; i < count;i++){
-        printf("%s",wordList[i]);
-    }
-    return 0;   
+    
     int* flow = (int*)calloc(maxInput+1, sizeof(int));
-    solve(matrix, beginTime, maxInput, flow);
-    fclose(fp);
-    if (line)
-        free(line);
-        return 0;
+    int flowSize = solve(matrix, beginTime, maxInput, flow);
+
+    //Print output
+    for(i = 1; i < flowSize;i++){
+        int firstLetter = flow[i-1];
+        int lastLetter = flow[i];
+        int aux = printIndexMatrix[firstLetter][lastLetter]++;
+        printf("%s\n", wordList[wordMatrixIndex[firstLetter][lastLetter][aux]]);
+    }
+        
 }
